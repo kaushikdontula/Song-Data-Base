@@ -1,0 +1,105 @@
+<!-- Kaushik Dontula
+CS290
+June 6th -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Search Genre - Music Database</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Music Database</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="songs.html">Add Song</a></li>
+            <li><a href="list_songs.html">List Songs</a></li>
+            <li><a href="search_genre.html">Search by Genre</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <form id="genre_form">
+            <label for="genre">Search by Genre:</label>
+            <select id="genre" name="genre">
+                <option value="">Select a genre</option>
+            </select>
+            <button type="submit">Select</button>
+        </form>
+
+        <div id="results">
+        </div>
+    </main>
+
+    <script>
+
+        // Get references to the form, dropdown, and results container
+        const genre_form = document.getElementById('genre_form');
+        const selected_genre = document.getElementById('genre');
+        const results_area = document.getElementById('results');
+
+        // Fetch the genres from the server and populate the dropdown
+        fetch('/api/songs')
+            .then(response => response.json())
+            .then(songs => {
+                // Extract unique genres from the songs
+                const genres_list = [...new Set(songs.map(song => song.genre))];
+
+                // Populate the dropdown options with genres
+                genres_list.forEach(genre => {
+                    const option = document.createElement('option');
+                    option.value = genre;
+                    option.textContent = genre;
+                    selected_genre.appendChild(option);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                selected_genre.innerHTML = '<option value="">Error cannot get genres</option>';
+            });
+
+        // Handle form submission
+        genre_form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting and refreshing the page
+            const genre_input = selected_genre.value; // Get the selected genre from the dropdown
+
+            // Fetch songs based on the selected genre
+            fetch(`/api/songs/${genre_input}`)
+                .then(response => response.json())
+                .then(songs => {
+                    results_area.innerHTML = ''; // Clear previous search results
+
+                    if (songs.length === 0) {
+                        // Display a message when no songs are found for the given genre
+                        results_area.innerHTML = '<p>Not able to find songs for the genre selected</p>';
+                    } else {
+                        // Display each song in the results container
+                        songs.forEach(song => {
+                            const song_element = document.createElement('div');
+                            song_element.innerHTML = `
+                                <h2>${song.title}</h2>
+                                <p>Artist: ${song.artist}</p>
+                                <p>Date Released: ${song.dateReleased}</p>
+                                <p>Popularity: ${song.popularity}</p>
+                                <p>Genre: ${song.genre}</p>
+                            `;
+                            results_area.appendChild(song_element);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    results_area.innerHTML = '<p>Error not able to get songs from server.</p>';
+                });
+});
+
+    </script>
+</body>
+</html>
+
+

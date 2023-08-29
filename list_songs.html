@@ -1,0 +1,83 @@
+<!-- Kaushik Dontula
+CS290
+June 6th -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Music Database</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Music Database</h1>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="songs.html">Add Song</a></li>
+            <li><a href="list_songs.html">List Songs</a></li>
+            <li><a href="search_genre.html">Search by Genre</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <h2>List of Songs</h2>
+
+        <ol id="songs_list"></ol>
+    </main>
+
+    <footer>
+        <p>&copy;2023 Kaushik Dontula</p>
+    </footer>
+
+    <script>
+        // Function to fetch songs from the API and populate the list
+        function getSongs() {
+            fetch("/api/songs")
+                .then(response => response.json())
+                .then(songs => {
+                    const songList = document.getElementById("songs_list");
+                    songList.innerHTML = "";
+                    songs.forEach(song => {
+                        const list_ele = document.createElement("li");
+                        const delete_button = document.createElement("button");
+                        delete_button.textContent = "Remove";
+                        delete_button.classList.add("remove-button");
+                        delete_button.addEventListener("click", () => removeSong(song._id));
+
+                        const update_button = document.createElement("button");
+                        update_button.textContent = "Update";
+                        update_button.classList.add("update-button");
+                        update_button.addEventListener("click", () => update_song(song._id));
+
+                        list_ele.textContent = `${song.title} - ${song.artist}`;
+                        list_ele.appendChild(delete_button);
+                        list_ele.appendChild(update_button);
+                        songList.appendChild(list_ele);
+
+                    });
+                })
+                .catch(error => console.error(error));
+        }
+
+        // Function to delete a song by ID
+        function removeSong(song_id) {
+            fetch(`/api/songs/${song_id}`, { method: "DELETE" })
+                .then(() => {
+                    getSongs();
+                })
+                .catch(error => console.error(error));
+        }
+
+        function update_song(song_id){
+            
+        }
+
+        // Fetch songs when the page loads
+        getSongs();
+    </script>
+</body>
+</html>
